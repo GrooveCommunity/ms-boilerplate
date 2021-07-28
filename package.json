@@ -1,0 +1,58 @@
+{
+  "name": "neojets-ms-crew",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "postbuild": "node ./prepare",
+    "lint": "eslint ./src/**/*.ts",
+    "prestart": "node ./prepare",
+    "prebuild": "npm run clear",
+    "prepare": "husky install",
+    "clear": "rimraf ./dist",
+    "start": "tsc --watch",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GrooveCommunity/neojets-ms-crew.git"
+  },
+  "contributors": [
+    {
+      "email": "coder.marcos@gmail.com",
+      "name": "codermarcos",
+      "url": "https://github.com/codermarcos"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/GrooveCommunity/neojets-ms-crew/issues"
+  },
+  "homepage": "https://github.com/GrooveCommunity/neojets-ms-crew#readme",
+  "dependencies": {
+    "aws-sdk": "^2.932.0",
+    "casbin": "^5.7.2",
+    "jsonwebtoken": "^8.5.1",
+    "request": "^2.88.2",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.3.5",
+    "@types/aws-lambda": "^8.10.73",
+    "@types/jest": "^26.0.23",
+    "@types/js-yaml": "^4.0.1",
+    "@types/jsonwebtoken": "^8.5.2",
+    "@types/node": "^14.17.3",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "@typescript-eslint/parser": "^4.26.1",
+    "eslint": "^7.28.0",
+    "husky": "^6.0.0",
+    "jest": "^27.0.4",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^27.0.3",
+    "ts-loader": "^9.0.0",
+    "ts-node": "^9.1.1",
+    "ts-node-dev": "^1.1.6",
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
+  }
+}

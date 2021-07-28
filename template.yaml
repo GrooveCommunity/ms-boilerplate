@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: SAM Template for local testing purposes
+
+Parameters:
+  Project:
+    Type: String
+    Default: ms-boilerplate
+  EnvName:
+    Type: String
+    Default: local
+  ExampleEnv:
+    Type: String
+    Default: local
+  KmsKeyArn:
+    Type: String
+  JwtSecret:
+    Type: String
+
+Globals:
+  Api:
+    OpenApiVersion: 3.0.1
+  Function:
+    Runtime: nodejs14.x
+    Timeout: 4
+    ReservedConcurrentExecutions: 10
+    MemorySize: 256
+    AutoPublishAlias: live
+    Tracing: Active
+
+Resources:
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name:
+        Fn::Sub: ${Project}-${EnvName}-boilerplate
+      EndpointConfiguration: EDGE
+      StageName:
+        Fn::Sub: ${EnvName}
+      Cors:
+        AllowOrigin: "'*'"
+        AllowMethods: "'OPTIONS,HEAD,GET,PUT,POST,DELETE'"
+        AllowHeaders: "'*'"
+      TracingEnabled: true
+      MethodSettings:
+        - HttpMethod: "*"
+          ResourcePath: /*
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: api.yaml
+      Auth:
+        Authorizers:
+          lambdaTokenAuth:
+            FunctionPayloadType: REQUEST
+            FunctionArn:
+              Fn::Sub: ${Authorizer.Arn}
+            Identity:
+              Headers:
+                - Authorization
+              ReauthorizeEvery: 0 # OPTIONAL; Service Default: 300
+
+  Ping:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${Project}-${EnvName}-ping
+      Description: This a endpoint example
+      CodeUri: dist
+      Handler: src/teste/ping.handler
+      KmsKeyArn:
+        Ref: KmsKeyArn
+      Environment:
+        Variables:
+          EXAMPLE_ENV:
+            Ref: ExampleEnv
+
+
+  Authorizer:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${Project}-${EnvName}-authorizer
+      Description: Authorizes requests to this boilerplate
+      CodeUri: dist
+      Handler: src/auth/authorize.handler
+      Environment:
+        Variables:
+          JWT_SECRET:
+            Ref: JwtSecret
+
+  ApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path:
+        Fn::Sub: /${Project}/${EnvName}/serviceRoles/
+      RoleName:
+        Fn::Sub: ${Project}-${EnvName}-api-execution-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName:
+            Fn::Sub: ${Project}-${EnvName}-api-execution-role-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - Fn::Sub: ${Ping.Arn}
+                  - Fn::Sub: ${Authorizer.Arn}
